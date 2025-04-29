@@ -1,0 +1,42 @@
+# Specification: Simple Math Agent and MCP
+
+- **Unique Specification ID:** SPEC-01-simple-math-agent-mcp
+- **Title:** Simple Math Agent with MCP-based Addition Tool
+- **Description:** Defines the minimal proof-of-concept implementation of an AI agent (Math Wizard) that uses a Multi-Copilot (MCP) server tool to perform addition. This serves as the foundational step for building more complex agent-MCP interactions.
+- **Requirements:**
+    - **MCP Server:**
+        - [ ] Requirement 1.1 [HIGH]: The MCP server MUST expose a network endpoint (e.g., HTTP API).
+        - [ ] Requirement 1.2 [HIGH]: The MCP server MUST provide a tool named 'add'.
+        - [ ] Requirement 1.3 [HIGH]: The 'add' tool MUST accept two numeric inputs (e.g., 'num1', 'num2').
+        - [ ] Requirement 1.4 [HIGH]: The 'add' tool MUST return the sum of the two numeric inputs.
+        - [ ] Requirement 1.5 [MEDIUM]: The MCP server SHOULD handle basic error conditions (e.g., non-numeric input) gracefully for the 'add' tool.
+    - **Math Wizard Agent:**
+        - [ ] Requirement 2.1 [HIGH]: The agent MUST be able to receive a natural language request involving the addition of two numbers (e.g., "What is 5 plus 3?").
+        - [ ] Requirement 2.2 [HIGH]: The agent MUST identify the intent to add and extract the two numbers from the request.
+        - [ ] Requirement 2.3 [HIGH]: The agent MUST call the MCP server's 'add' tool endpoint with the extracted numbers.
+        - [ ] Requirement 2.4 [HIGH]: The agent MUST receive the sum result from the MCP server.
+        - [ ] Requirement 2.5 [HIGH]: The agent MUST present the final result in a user-friendly format (e.g., "5 plus 3 is 8.").
+        - [ ] Requirement 2.6 [MEDIUM]: The agent SHOULD handle cases where the MCP server call fails or returns an error.
+- **Testing Criteria:**
+    - **MCP Server:**
+        - Unit Testing: Test the 'add' tool logic directly with various numeric inputs (positive, negative, zero). Test error handling for invalid inputs.
+        - Integration Testing: Test the MCP server endpoint by sending HTTP requests simulating the agent's call and verifying the responses.
+    - **Math Wizard Agent:**
+        - Unit Testing: Test the agent's intent recognition and number extraction logic. Test the logic for formatting the final response.
+        - Integration Testing: Test the full agent flow by providing a natural language request and verifying the agent correctly calls the (mocked or real) MCP server and produces the expected final output. Test scenarios with expected MCP errors.
+- **Acceptance Criteria:**
+    - A user can ask the Math Wizard agent to add two specific numbers.
+    - The agent successfully calls the MCP server's 'add' tool.
+    - The MCP server correctly calculates and returns the sum.
+    - The agent presents the correct sum back to the user.
+    - Basic error handling for invalid input to the MCP tool is functional.
+    - Agent handles basic communication errors with the MCP.
+- **Metadata:**
+    - **ID:** SPEC-01-simple-math-agent-mcp
+    - **Creation Date:** 2024-07-26 # Placeholder, update if needed
+    - **Last Updated:** 2024-07-26 # Placeholder, update if needed
+    - **Status:** draft
+    - **Completion Percentage:** 0%
+- **Domain/Component:** Core Agent-MCP Interaction
+- **Related Specifications:** None yet
+- **Notes:** This is the foundational specification. Future specs will build upon this interaction model. Focus is on demonstrating the core loop: Agent -> MCP -> Agent. 

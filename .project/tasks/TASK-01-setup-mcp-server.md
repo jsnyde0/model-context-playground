@@ -1,0 +1,27 @@
+# Task: Setup Basic MCP Server Structure using SDK
+
+- **Unique Task ID:** TASK-01-setup-mcp-server
+- **Description:** Create the basic project structure and initial files for the MCP server component **using the `modelcontextprotocol` Python SDK within the main package structure (`src/model_context_playground/mcp_server/`)**. This includes setting up the main server file using `FastMCP`, adding the SDK as a dependency, and ensuring it can run locally via the `mcp` CLI or `uv run`. This task primarily addresses Req 1.1.
+- **Relevant Specification:** [.project/specs/SPEC-01-simple-math-agent-mcp.md](.project/specs/SPEC-01-simple-math-agent-mcp.md) (Specifically Requirement 1.1)
+- **Acceptance Criteria:**
+    - A directory structure for the MCP server exists within the main package (e.g., `src/model_context_playground/mcp_server/`).
+    - The `mcp` package is added as a project dependency (e.g., in `pyproject.toml`).
+    - A basic MCP server using `FastMCP` is implemented in a main file (e.g., `src/model_context_playground/mcp_server/main.py`).
+    - The server can be started locally (e.g., via `uv run model_context_playground.mcp_server.main:mcp` or `mcp dev src/model_context_playground/mcp_server/main.py`).
+    - The server initializes successfully without errors. (We'll add a specific tool endpoint in the next task).
+- **Tests:**
+    - N/A for this setup task, tests will be added when implementing the 'add' tool in the next task.
+- **Metadata:**
+    - **ID:** TASK-01-setup-mcp-server
+    - **Start Date:** 2024-07-26
+    - **End Date:** 2024-07-26
+    - **State:** closed
+    - **Estimated Lines of Code:** ~10-20
+- **Complexity:** Low
+- **Learnings:**
+    - Used `mcp` Python SDK (`FastMCP`) for basic server setup.
+    - Added SDK dependency via `uv add mcp`.
+    - Refactored structure: server code moved to `src/model_context_playground/mcp_server/`.
+    - `mcp dev` starts an inspector; accessing its URL gives "Cannot GET /", which is expected for browser access.
+    - Must use `uv run mcp dev ...` (or `uv run python ...`) to execute commands from the virtual environment.
+    - Correct server path is `src/model_context_playground/mcp_server/main.py`. 
