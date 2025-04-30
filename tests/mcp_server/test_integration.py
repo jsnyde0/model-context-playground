@@ -1,9 +1,10 @@
 # tests/mcp_server/test_integration.py
 import pytest
 import sys
+import playground # Import our package
 from mcp.client.session import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
-import mcp.types as types # Import types
+import mcp.types as types
 
 # Mark all tests in this file as async
 pytestmark = pytest.mark.asyncio
@@ -12,7 +13,7 @@ pytestmark = pytest.mark.asyncio
 SERVER_PARAMS = StdioServerParameters(
     command=sys.executable, # Use the same python executing the tests
     args=[
-        "-m", "model_context_playground.mcp_server" # Directly run the module
+        "-m", "playground.mcp_server" # Directly run the module
     ]
 )
 

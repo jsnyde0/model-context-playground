@@ -1,7 +1,7 @@
 import pytest
 
 # Import the function we want to test
-from model_context_playground.mcp_server import add
+from playground.mcp_server import add
 
 
 def test_add_positive_integers():

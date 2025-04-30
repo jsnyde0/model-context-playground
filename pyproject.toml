@@ -1,5 +1,5 @@
 [project]
-name = "model-context-playground"
+name = "playground"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-model-context-playground = "model_context_playground:main"
+playground = "playground:main"
 
 [build-system]
 requires = ["hatchling"]
