@@ -13,6 +13,11 @@ async def main():
             tool_names = [tool.name for tool in tools_result.tools]
             print(f"tool_names: {tool_names}")
 
+            result: types.CallToolResult = await session.call_tool(
+                "add", {"a": 15, "b": 7}
+            )
+            print(f"result: {result.content[0].text}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
