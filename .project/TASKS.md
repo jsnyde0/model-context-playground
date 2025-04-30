@@ -8,6 +8,7 @@ This document provides an index of all tasks defined for the project. Tasks repr
 |---------|-------------|---------------|-------|------------|------------|
 | TASK-01-setup-mcp-server | Setup Basic MCP Server Structure | SPEC-01 | closed | Low | 2024-07-26 |
 | TASK-02-implement-add-tool | Implement MCP 'add' Tool | SPEC-01 | closed | Low | 2024-07-26 |
+| TASK-03-setup-agent | Setup Basic Math Wizard Agent | SPEC-01 | closed | Low | 2024-07-29 |
 
 ## Notes
 

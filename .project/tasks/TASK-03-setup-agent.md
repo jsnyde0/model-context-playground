@@ -1,0 +1,25 @@
+# Task: Setup Basic Math Wizard Agent
+
+- **Unique Task ID:** TASK-03-setup-agent
+- **Description:** Create the basic structure for the Math Wizard agent. This includes setting up its main file (`playground/agent.py`), adding necessary dependencies (like the `mcp` client SDK - already present), and establishing the basic interaction loop (e.g., read input, process, print output). This task sets the stage for implementing Req 2.1 and 2.5.
+- **Relevant Specification:** [.project/specs/SPEC-01-simple-math-agent-mcp.md](.project/specs/SPEC-01-simple-math-agent-mcp.md) (Requirements 2.1, 2.5 as initial focus)
+- **Acceptance Criteria:**
+    - An agent script exists at `playground/agent.py`.
+    - The agent script can be run (e.g., `uv run python -m playground.agent`).
+    - The script includes a basic loop that can (at minimum) print a prompt, read user input, and print a placeholder response.
+    - The `mcp` package is available.
+- **Tests:**
+    - Simple test to ensure the agent script can be imported/run without immediate errors (e.g., in `tests/agent/test_agent.py`).
+- **Metadata:**
+    - **ID:** TASK-03-setup-agent
+    - **Start Date:** 2024-07-29
+    - **End Date:** 2024-07-29
+    - **State:** closed
+    - **Estimated Lines of Code:** ~20-30
+- **Complexity:** Low
+- **Learnings:**
+    - Created basic agent file `playground/agent.py`.
+    - Implemented a simple `while True` loop with `input()` for user interaction.
+    - Included basic `try...except` blocks for `EOFError` (Ctrl+D) and `KeyboardInterrupt` (Ctrl+C) for graceful exit.
+    - Added placeholder function `process_request` for future logic.
+    - Added basic unit tests (`tests/agent/test_agent.py`) to verify module import and placeholder function behavior.
