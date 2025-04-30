@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio
 SERVER_PARAMS = StdioServerParameters(
     command=sys.executable, # Use the same python executing the tests
     args=[
-        "-m", "model_context_playground.mcp_server.main" # Directly run the module
+        "-m", "model_context_playground.mcp_server" # Directly run the module
     ]
 )
 

@@ -1,10 +1,10 @@
 # Task: Implement MCP 'add' Tool
 
 - **Unique Task ID:** TASK-02-implement-add-tool
-- **Description:** Implement the 'add' tool within the MCP server (`src/model_context_playground/mcp_server/main.py`) using the `@mcp.tool()` decorator provided by the SDK. This tool should accept two numbers and return their sum, fulfilling requirements 1.2, 1.3, and 1.4 from the specification. Include basic error handling for non-numeric input (Req 1.5).
+- **Description:** Implement the 'add' tool within the MCP server (`src/model_context_playground/mcp_server.py`) using the `@mcp.tool()` decorator provided by the SDK. This tool should accept two numbers and return their sum, fulfilling requirements 1.2, 1.3, and 1.4 from the specification. Include basic error handling for non-numeric input (Req 1.5).
 - **Relevant Specification:** [.project/specs/SPEC-01-simple-math-agent-mcp.md](.project/specs/SPEC-01-simple-math-agent-mcp.md) (Specifically Requirements 1.2, 1.3, 1.4, 1.5)
 - **Acceptance Criteria:**
-    - An `add` function decorated with `@mcp.tool()` exists in `src/model_context_playground/mcp_server/main.py`.
+    - An `add` function decorated with `@mcp.tool()` exists in `src/model_context_playground/mcp_server.py`.
     - The function accepts two arguments (e.g., `a: int`, `b: int` or similar, type hints are recommended).
     - The function correctly returns the sum of the two arguments when they are numeric.
     - The function raises an appropriate exception (e.g., `TypeError` or `ValueError`) or returns an error indicator if non-numeric input is provided.
@@ -15,7 +15,7 @@
     - Unit tests for the `add` function:
         - Test with various integer and float inputs (positive, negative, zero).
         - Test with non-numeric inputs to verify error handling.
-    - Integration tests (`tests/mcp_server/test_integration.py`):
+    - Integration tests (`tests/mcp_server/test_integration.py` - note: test file path remains nested):
         - Start the MCP server process.
         - Connect using an MCP client (e.g., `stdio_client`).
         - Verify 'add' tool is listed via `list_tools`.
