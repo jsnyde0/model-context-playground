@@ -1,7 +1,8 @@
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server instance named 'MathWizardMCP'
-mcp = FastMCP("MathWizardMCP")
+mcp = FastMCP("MathWizardMCP", host="0.0.0.0", port=8050)
+
 
 # We will add tools (@mcp.tool) here in the next task
 @mcp.tool()
@@ -22,4 +23,4 @@ def add(a: int, b: int) -> int:
 
 # Add the entry point for running the server directly (optional but good practice)
 if __name__ == "__main__":
-    mcp.run() 
+    mcp.run(transport="sse")

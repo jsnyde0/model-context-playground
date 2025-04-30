@@ -428,6 +428,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "mcp", extra = ["cli"] },
+    { name = "pytest-xprocess" },
 ]
 
 [package.dev-dependencies]
@@ -438,7 +439,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mcp", extras = ["cli"], specifier = ">=1.6.0" }]
+requires-dist = [
+    { name = "mcp", extras = ["cli"], specifier = ">=1.6.0" },
+    { name = "pytest-xprocess", specifier = ">=1.0.2" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -615,6 +619,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8e/c4/453c52c659521066969523e87d85d54139bbd17b78f09532fb8eb8cdb58e/pytest_asyncio-0.26.0.tar.gz", hash = "sha256:c4df2a697648241ff39e7f0e4a73050b03f123f760673956cf0d72a4990e312f", size = 54156 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/7f/338843f449ace853647ace35870874f69a764d251872ed1b4de9f234822c/pytest_asyncio-0.26.0-py3-none-any.whl", hash = "sha256:7b51ed894f4fbea1340262bdae5135797ebbe21d8638978e35d31c6d19f72fb0", size = 19694 },
+]
+
+[[package]]
+name = "pytest-xprocess"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "psutil" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/6f/e53d349445b4280f6b47bbed87127e994f331c335377d5e72407b376ad46/pytest-xprocess-1.0.2.tar.gz", hash = "sha256:15e270637586eabc56755ee5fcc81c48bdb46ba7ef7c0d5b1b64302d080cc60f", size = 13232 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/63/cf/91b94238c843bfbae0a6674df45015aa3908b91454c496b2eb29e7991255/pytest_xprocess-1.0.2-py3-none-any.whl", hash = "sha256:0b0444d1f789fd9b4ba8b6b38b1d0139f226ab14091db2698a0521c1770523dd", size = 9628 },
 ]
 
 [[package]]

@@ -1,25 +1,21 @@
 # tests/mcp_server/test_integration.py
 import pytest
 import sys
-import playground # Import our package
+import asyncio  # <-- Import asyncio
+import playground  # Import our package
 from mcp.client.session import ClientSession
-from mcp.client.stdio import StdioServerParameters, stdio_client
+from mcp.client.sse import sse_client
 import mcp.types as types
 
 # Mark all tests in this file as async
 pytestmark = pytest.mark.asyncio
 
-# Define server parameters - use 'python -m' for reliability
-SERVER_PARAMS = StdioServerParameters(
-    command=sys.executable, # Use the same python executing the tests
-    args=[
-        "-m", "playground.mcp_server" # Directly run the module
-    ]
-)
 
-async def test_server_lists_add_tool():
+# Request the mcp_server_process fixture explicitly
+async def test_server_lists_add_tool(mcp_server_process):
     """Verify the server lists the 'add' tool via MCP."""
-    async with stdio_client(SERVER_PARAMS) as (read, write):
+    await asyncio.sleep(0.5)  # <-- Add small delay for server startup
+    async with sse_client("http://127.0.0.1:8050/sse") as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
             tools_result: types.ListToolsResult = await session.list_tools()
@@ -30,36 +26,51 @@ async def test_server_lists_add_tool():
             assert "add" in tool_names
             # Remove the try/except block as we now know the structure
 
-async def test_server_call_add_tool_success():
+
+# Request the mcp_server_process fixture explicitly
+async def test_server_call_add_tool_success(mcp_server_process):
     """Test calling the 'add' tool with valid arguments via MCP."""
-    async with stdio_client(SERVER_PARAMS) as (read, write):
+    await asyncio.sleep(0.1)  # <-- Add small delay (can be shorter after first test)
+    async with sse_client("http://127.0.0.1:8050/sse") as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
-            result: types.CallToolResult = await session.call_tool("add", {"a": 15, "b": 7})
+            result: types.CallToolResult = await session.call_tool(
+                "add", {"a": 15, "b": 7}
+            )
             assert not result.isError
             # Assuming the result is in the first TextContent block
             assert len(result.content) == 1
             assert isinstance(result.content[0], types.TextContent)
             assert result.content[0].text == "22"
 
-async def test_server_call_add_tool_invalid_type():
+
+# Request the mcp_server_process fixture explicitly
+async def test_server_call_add_tool_invalid_type(mcp_server_process):
     """Test calling the 'add' tool with invalid argument types via MCP."""
-    async with stdio_client(SERVER_PARAMS) as (read, write):
+    await asyncio.sleep(0.1)  # <-- Add small delay
+    async with sse_client("http://127.0.0.1:8050/sse") as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
             # Expect a CallToolResult indicating an error, not a Python exception
-            result: types.CallToolResult = await session.call_tool("add", {"a": "not_a_number", "b": 7})
+            result: types.CallToolResult = await session.call_tool(
+                "add", {"a": "not_a_number", "b": 7}
+            )
             assert result.isError
             # Optionally, check the error message content if needed
             # assert "validation error" in result.content[0].text.lower()
 
-async def test_server_call_add_tool_missing_arg():
+
+# Request the mcp_server_process fixture explicitly
+async def test_server_call_add_tool_missing_arg(mcp_server_process):
     """Test calling the 'add' tool with missing arguments via MCP."""
-    async with stdio_client(SERVER_PARAMS) as (read, write):
+    await asyncio.sleep(0.1)  # <-- Add small delay
+    async with sse_client("http://127.0.0.1:8050/sse") as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
             # Expect a CallToolResult indicating an error
-            result: types.CallToolResult = await session.call_tool("add", {"a": 5}) # Missing 'b'
+            result: types.CallToolResult = await session.call_tool(
+                "add", {"a": 5}
+            )  # Missing 'b'
             assert result.isError
             # Optionally, check the error message content if needed
-            # assert "validation error" in result.content[0].text.lower() 
+            # assert "validation error" in result.content[0].text.lower()
