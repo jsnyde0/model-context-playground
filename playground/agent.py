@@ -124,7 +124,7 @@ class Agent:
                 return None
 
 
-async def run_agent_loop():
+async def chat_with_agent():
     """Runs the main interaction loop for the agent."""
     print("Math Wizard Agent initialized. Ask me to add numbers!")
     print("(Type 'quit' to exit)")
@@ -150,4 +150,4 @@ async def run_agent_loop():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_agent_loop())
+    asyncio.run(chat_with_agent())
