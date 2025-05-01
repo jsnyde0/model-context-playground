@@ -1,7 +1,9 @@
 import json
-import requests
 from openai import AsyncOpenAI
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+)
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -60,20 +62,6 @@ class Agent:
             api_key=api_key,
         )
 
-    def _process_llm_response(self, response: Any) -> dict:
-        """Processes the raw response from the LLM API into a simple dictionary."""
-        message = response.choices[0].message
-
-        if message.tool_calls:
-            # The LLM decided to call one or more tools
-            return {"type": "tool_call", "tool_calls": message.tool_calls}
-        elif message.content is not None:
-            # The LLM provided a text response
-            return {"type": "text", "content": message.content}
-        else:
-            # No tool call and no text content (unusual)
-            return {"type": "empty"}
-
     async def _prompt_llm(
         self, user_input: str, tools: list[dict] | None = None
     ) -> ChatCompletionMessage:
@@ -98,15 +86,21 @@ class Agent:
         # Make the API call
         response = await self.llm_client.chat.completions.create(**api_args)
         message = response.choices[0].message
-        self.messages.append(message.model_dump())
 
         return message
+
+    async def execute_tool(self, tool_call: ChatCompletionMessageToolCall) -> Any:
+        tool_name = tool_call.function.name
+        tool_args = json.loads(tool_call.function.arguments)
+        tool_output = TOOL_MAPPING[tool_name](**tool_args)
+        return tool_output
 
     async def prompt(self, user_input: str, tools: list[dict] | None = None) -> Any:
         """Prompt the agent, which in turn might prompt an LLM or call a tool or both."""
         llm_completion_message: ChatCompletionMessage = await self._prompt_llm(
             user_input, tools
         )
+        self.messages.append(llm_completion_message.model_dump())
 
         if not llm_completion_message:
             print("LLM call failed.")
@@ -115,12 +109,16 @@ class Agent:
         print(f"Raw LLM completion message object: {llm_completion_message}")
 
         if llm_completion_message.tool_calls:
-            # print(f"Tool call(s) requested: {llm_completion_message.tool_calls}")
-            # let's call the tool
             tool_call = llm_completion_message.tool_calls[0]
-            tool_name = tool_call.function.name
-            tool_args = json.loads(tool_call.function.arguments)
-            tool_output = TOOL_MAPPING[tool_name](**tool_args)
+            tool_output = await self.execute_tool(tool_call)
+            self.messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": tool_call.function.name,
+                    "content": json.dumps(tool_output),
+                }
+            )
             return tool_output
 
         elif llm_completion_message.content:
