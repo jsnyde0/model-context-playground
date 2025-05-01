@@ -1,14 +1,35 @@
 import json
 import requests
 from openai import AsyncOpenAI
+from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from dotenv import load_dotenv
 import os
 import asyncio
 from typing import Any
 
+from playground.mcp_server import add
+
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+add_tool_schema = {
+    "type": "function",
+    "function": {
+        "name": "add",
+        "description": "Add two numbers together",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "a": {"type": "integer", "description": "First number"},
+                "b": {"type": "integer", "description": "Second number"},
+            },
+            "required": ["a", "b"],
+        },
+    },
+}
+
+TOOL_MAPPING = {
+    "add": add,
+}
 
 
 class Agent:
@@ -53,9 +74,9 @@ class Agent:
             # No tool call and no text content (unusual)
             return {"type": "empty"}
 
-    async def prompt_llm(
+    async def _prompt_llm(
         self, user_input: str, tools: list[dict] | None = None
-    ) -> dict:
+    ) -> ChatCompletionMessage:
         """Sends a prompt to the LLM and processes the response into a simple dictionary."""
 
         self.messages.append(
@@ -76,10 +97,38 @@ class Agent:
 
         # Make the API call
         response = await self.llm_client.chat.completions.create(**api_args)
-        message = response.choices[0].message.dict()
-        self.messages.append(message)
+        message = response.choices[0].message
+        self.messages.append(message.model_dump())
 
         return message
+
+    async def prompt(self, user_input: str, tools: list[dict] | None = None) -> Any:
+        """Prompt the agent, which in turn might prompt an LLM or call a tool or both."""
+        llm_completion_message: ChatCompletionMessage = await self._prompt_llm(
+            user_input, tools
+        )
+
+        if not llm_completion_message:
+            print("LLM call failed.")
+            raise Exception("LLM call failed.")
+
+        print(f"Raw LLM completion message object: {llm_completion_message}")
+
+        if llm_completion_message.tool_calls:
+            # print(f"Tool call(s) requested: {llm_completion_message.tool_calls}")
+            # let's call the tool
+            tool_call = llm_completion_message.tool_calls[0]
+            tool_name = tool_call.function.name
+            tool_args = json.loads(tool_call.function.arguments)
+            tool_output = TOOL_MAPPING[tool_name](**tool_args)
+            return tool_output
+
+        elif llm_completion_message.content:
+            print(f"LLM text response: {llm_completion_message.content}")
+            return llm_completion_message.content
+        else:
+            print("No tool call or text content in the response, or LLM call failed.")
+            return None
 
 
 async def run_agent_loop():
@@ -96,7 +145,7 @@ async def run_agent_loop():
                 print("Wizard: Goodbye!")
                 break
 
-            response = await agent.prompt_llm(user_input)
+            response = await agent.prompt(user_input, tools=[add_tool_schema])
             print(f"Wizard: {response}")
 
         except EOFError:  # Handle Ctrl+D
