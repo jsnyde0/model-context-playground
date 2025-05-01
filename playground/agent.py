@@ -63,16 +63,9 @@ class Agent:
         )
 
     async def _prompt_llm(
-        self, user_input: str, tools: list[dict] | None = None
+        self, tools: list[dict] | None = None
     ) -> ChatCompletionMessage:
         """Sends a prompt to the LLM and processes the response into a simple dictionary."""
-
-        self.messages.append(
-            {
-                "role": "user",
-                "content": user_input,
-            }
-        )
 
         # Prepare arguments for the API call
         api_args = {
@@ -97,36 +90,38 @@ class Agent:
 
     async def prompt(self, user_input: str, tools: list[dict] | None = None) -> Any:
         """Prompt the agent, which in turn might prompt an LLM or call a tool or both."""
-        llm_completion_message: ChatCompletionMessage = await self._prompt_llm(
-            user_input, tools
-        )
-        self.messages.append(llm_completion_message.model_dump())
+        self.messages.append({"role": "user", "content": user_input})
 
-        if not llm_completion_message:
-            print("LLM call failed.")
-            raise Exception("LLM call failed.")
+        while True:
+            try:
+                llm_completion_message: ChatCompletionMessage = await self._prompt_llm(
+                    tools
+                )
+            except Exception as e:
+                print(f"Error: {e}")
+                return "Sorry, I encountered an error trying to process that."
 
-        print(f"Raw LLM completion message object: {llm_completion_message}")
+            self.messages.append(llm_completion_message.model_dump())
 
-        if llm_completion_message.tool_calls:
-            tool_call = llm_completion_message.tool_calls[0]
-            tool_output = await self.execute_tool(tool_call)
-            self.messages.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": tool_call.function.name,
-                    "content": json.dumps(tool_output),
-                }
-            )
-            return tool_output
+            if llm_completion_message.tool_calls:
+                tool_call = llm_completion_message.tool_calls[0]
+                tool_output = await self.execute_tool(tool_call)
+                self.messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": tool_call.function.name,
+                        "content": json.dumps(tool_output),
+                    }
+                )
 
-        elif llm_completion_message.content:
-            print(f"LLM text response: {llm_completion_message.content}")
-            return llm_completion_message.content
-        else:
-            print("No tool call or text content in the response, or LLM call failed.")
-            return None
+            elif llm_completion_message.content:
+                return llm_completion_message.content
+            else:
+                print(
+                    "No tool call or text content in the response, or LLM call failed."
+                )
+                return None
 
 
 async def run_agent_loop():
