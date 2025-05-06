@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from typing import Any
+import mcp.types as types
+from mcp.client.session import ClientSession
 
 from playground.mcp_server import add
 
@@ -62,6 +64,17 @@ class Agent:
             api_key=api_key,
         )
 
+    def _convert_mcp_tool_to_openrouter_format(self, mcp_tool: types.Tool) -> dict:
+        """Converts an MCP Tool definition into the OpenRouter function calling format."""
+        return {
+            "type": "function",
+            "function": {
+                "name": mcp_tool.name,
+                "description": mcp_tool.description,
+                "parameters": mcp_tool.inputSchema,
+            },
+        }
+
     async def _prompt_llm(
         self, tools: list[dict] | None = None
     ) -> ChatCompletionMessage:
@@ -82,36 +95,62 @@ class Agent:
 
         return message
 
-    async def execute_tool(self, tool_call: ChatCompletionMessageToolCall) -> Any:
+    async def _execute_tool(self, tool_call: ChatCompletionMessageToolCall) -> Any:
         tool_name = tool_call.function.name
         tool_args = json.loads(tool_call.function.arguments)
         tool_output = TOOL_MAPPING[tool_name](**tool_args)
         return tool_output
 
-    async def prompt(self, user_input: str, tools: list[dict] | None = None) -> Any:
+    async def _execute_mcp_tool(
+        self, mcp_session: ClientSession, tool_call: ChatCompletionMessageToolCall
+    ) -> types.CallToolResult:
+        tool_name = tool_call.function.name
+        tool_args = json.loads(tool_call.function.arguments)
+        tool_result: types.CallToolResult = await mcp_session.call_tool(
+            tool_name, tool_args
+        )
+        return tool_result
+
+    async def prompt(
+        self,
+        user_input: str,
+        mcp_session: ClientSession | None = None,
+    ) -> Any:
         """Prompt the agent, which in turn might prompt an LLM or call a tool or both."""
         self.messages.append({"role": "user", "content": user_input})
 
+        if mcp_session:
+            raw_mcp_tools: types.ListToolsResult = await mcp_session.list_tools()
+            mcp_tools = [
+                self._convert_mcp_tool_to_openrouter_format(tool)
+                for tool in raw_mcp_tools.tools
+            ]
+
         while True:
+            # call the LLM
             try:
                 llm_completion_message: ChatCompletionMessage = await self._prompt_llm(
-                    tools
+                    tools=mcp_tools
                 )
             except Exception as e:
                 print(f"Error: {e}")
                 return "Sorry, I encountered an error trying to process that."
 
+            # extend the message history with the LLM's response
             self.messages.append(llm_completion_message.model_dump())
 
+            # if the LLM called a tool, execute it and extend the message history
             if llm_completion_message.tool_calls:
                 tool_call = llm_completion_message.tool_calls[0]
-                tool_output = await self.execute_tool(tool_call)
+                tool_result: types.CallToolResult = await self._execute_mcp_tool(
+                    mcp_session, tool_call
+                )
                 self.messages.append(
                     {
                         "role": "tool",
                         "tool_call_id": tool_call.id,
                         "name": tool_call.function.name,
-                        "content": json.dumps(tool_output),
+                        "content": tool_result.content[0].text,
                     }
                 )
 
