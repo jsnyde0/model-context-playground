@@ -95,6 +95,17 @@ class Agent:
 
         return message
 
+    async def _get_mcp_tools(self, mcp_session: ClientSession) -> list[dict]:
+        """Get MCP tools in OpenRouter format."""
+        if not mcp_session:
+            return []
+        raw_mcp_tools: types.ListToolsResult = await mcp_session.list_tools()
+        mcp_tools = [
+            self._convert_mcp_tool_to_openrouter_format(tool)
+            for tool in raw_mcp_tools.tools
+        ]
+        return mcp_tools
+
     async def _execute_tool(self, tool_call: ChatCompletionMessageToolCall) -> Any:
         tool_name = tool_call.function.name
         tool_args = json.loads(tool_call.function.arguments)
@@ -119,12 +130,7 @@ class Agent:
         """Prompt the agent, which in turn might prompt an LLM or call a tool or both."""
         self.messages.append({"role": "user", "content": user_input})
 
-        if mcp_session:
-            raw_mcp_tools: types.ListToolsResult = await mcp_session.list_tools()
-            mcp_tools = [
-                self._convert_mcp_tool_to_openrouter_format(tool)
-                for tool in raw_mcp_tools.tools
-            ]
+        mcp_tools = await self._get_mcp_tools(mcp_session)
 
         while True:
             # call the LLM
@@ -134,25 +140,25 @@ class Agent:
                 )
             except Exception as e:
                 print(f"Error: {e}")
-                return "Sorry, I encountered an error trying to process that."
+                return "Sorry, I encountered an error trying to prompt the LLM."
 
             # extend the message history with the LLM's response
             self.messages.append(llm_completion_message.model_dump())
 
             # if the LLM called a tool, execute it and extend the message history
             if llm_completion_message.tool_calls:
-                tool_call = llm_completion_message.tool_calls[0]
-                tool_result: types.CallToolResult = await self._execute_mcp_tool(
-                    mcp_session, tool_call
-                )
-                self.messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": tool_call.function.name,
-                        "content": tool_result.content[0].text,
-                    }
-                )
+                for tool_call in llm_completion_message.tool_calls:
+                    tool_result: types.CallToolResult = await self._execute_mcp_tool(
+                        mcp_session, tool_call
+                    )
+                    self.messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": tool_call.function.name,
+                            "content": tool_result.content[0].text,
+                        }
+                    )
 
             elif llm_completion_message.content:
                 return llm_completion_message.content
